@@ -1,0 +1,62 @@
+name: Refresh official SJSU data
+on:
+  schedule:
+    - cron: "17 14 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: data-refresh-and-gandi-publish
+  cancel-in-progress: false
+jobs:
+  refresh:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.13"
+          cache: pip
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "22"
+          cache: npm
+      - run: pip install -r requirements.txt
+      - run: python -m unittest discover -s tests -v
+      - name: Collect complete public schedules and enrollment
+        run: python -m pipeline.refresh --with-enrollment --discover
+      - run: python -m pipeline.validate
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Commit validated observations
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/data
+          if ! git diff --cached --quiet; then
+            git commit -m 'data: refresh official SJSU semester observations'
+            git push
+          fi
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: validated-static-site
+          path: dist/
+          retention-days: 3
+      - name: Publish only the configured Gandi app directory
+        if: vars.GANDI_DEPLOY_ENABLED == 'true'
+        env:
+          SFTP_HOST: ${{ secrets.GANDI_SFTP_HOST }}
+          SFTP_USER: ${{ secrets.GANDI_SFTP_USER }}
+          SFTP_PORT: ${{ vars.GANDI_SFTP_PORT || '22' }}
+          SFTP_PRIVATE_KEY: ${{ secrets.GANDI_SFTP_PRIVATE_KEY }}
+          SFTP_KEY_PASSPHRASE: ${{ secrets.GANDI_SFTP_KEY_PASSPHRASE }}
+          SFTP_PASSWORD: ${{ secrets.GANDI_SFTP_PASSWORD }}
+          SFTP_KNOWN_HOSTS: ${{ secrets.GANDI_SFTP_KNOWN_HOSTS }}
+          SFTP_REMOTE_DIR: ${{ vars.GANDI_REMOTE_DIR }}
+        run: python scripts/deploy_sftp.py --execute
+      - name: Deployment configuration status
+        if: vars.GANDI_DEPLOY_ENABLED != 'true'
+        run: echo 'Gandi upload is disabled. The validated build is available as a workflow artifact.'

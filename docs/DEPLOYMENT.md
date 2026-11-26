@@ -25,3 +25,17 @@ https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-t
 ## Pending setup
 
 Confirm Gandi hosting product, SFTP endpoint, exact document root, remote app directory, credential, and host fingerprint. These do not block local implementation or CI.
+
+## GitHub workflows
+
+CI checks Python regression tests, published snapshot hashes, TypeScript calculations, and the production build. Daily refresh runs at 14:17 UTC (6:17 AM Pacific standard / 7:17 AM Pacific daylight), discovers the latest spring/fall terms, commits validated observations, and retains prior terms. Manually trigger it from the Actions tab. Builds are workflow artifacts retained for three days. The refresh job runs its own checks because pushes using GITHUB_TOKEN do not trigger the usual push workflow.
+
+## Production configuration
+
+Repository variables: `GANDI_DEPLOY_ENABLED` (false until ready), `GANDI_REMOTE_DIR` (the app-only destination confirmed from FileZilla), and optional `GANDI_SFTP_PORT` (22 by default).
+
+GitHub Actions secrets: `GANDI_SFTP_HOST`, `GANDI_SFTP_USER`, `GANDI_SFTP_KNOWN_HOSTS`, and either `GANDI_SFTP_PRIVATE_KEY` (plus optional `GANDI_SFTP_KEY_PASSPHRASE`) or `GANDI_SFTP_PASSWORD` for an appropriate deployment token/password. Configure credentials through GitHub Settings, never source control or chat. Verify the host key against the host's published fingerprint or a trusted FileZilla connection.
+
+`python scripts/deploy_sftp.py --remote-dir /path/to/site/www/sjsu-timemap` performs a dry run. Actual upload requires `--execute`. The script rejects roots, traversal, other app names, and symlink destinations. Assets and immutable datasets are uploaded first, the manifest next, and index.html last through atomic SFTP renames. Only strictly named expired app datasets are eligible for bounded cleanup after publication.
+
+After connection setup, verify a scoped upload and the live app before enabling daily production uploads. Existing DNS and sibling projects are outside this deployment.

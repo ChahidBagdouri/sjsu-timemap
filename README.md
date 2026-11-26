@@ -6,7 +6,18 @@ TimeMap combines public meeting schedules with section enrollment counts to help
 
 ## Project status
 
-Initial development. The first milestone is a reproducible, validated full-semester import. See [Roadmap](docs/ROADMAP.md) and [Build log](docs/BUILD_LOG.md) for verified progress and limitations.
+A working first version includes real Fall 2026 and Spring 2027 schedules, enrollment weighting with visible coverage, filters, event-window comparisons, and exports. See [Roadmap](docs/ROADMAP.md) and [Build log](docs/BUILD_LOG.md) for verified progress and limitations.
+
+## Run locally
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python -m pip install -r requirements.txt
+npm ci
+npm run dev
+```
+
+Open the printed Local URL, including `/sjsu-timemap/`. See [Development](docs/DEVELOPMENT.md) for data collection, checks, and platform-specific commands.
 
 ## Structure
 
@@ -26,6 +37,9 @@ The local Git checkout lives in `sjsu-timemap/dev`. The original De Anza referen
 
 ## Documentation
 
+- [Development guide](docs/DEVELOPMENT.md)
+- [Dataset contract](docs/SCHEMA.md)
+- [Known limitations](docs/KNOWN_LIMITATIONS.md)
 - [Architecture and decisions](docs/DECISIONS.md)
 - [Sources and data semantics](docs/DATA.md)
 - [Deployment and operations](docs/DEPLOYMENT.md)
