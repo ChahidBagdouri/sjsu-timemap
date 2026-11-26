@@ -14,6 +14,15 @@
 - Browser checks exercised subject filtering, enrollment mode, class details, specific-week selection, 5-minute bins, and PNG generation.
 - The owner supplied the FileZilla website directory. Only the app subdirectory is a permitted deployment destination; credentials remain separate.
 
+## 2026-11-26 UTC - hosted verification
+
+- GitHub's complete source-import workflow passed on a hosted Linux runner, committed new public observations, and produced the static artifact. No laptop process was involved in that run.
+- CI passed independently. Both hosted runs include the regression suite and production build.
+- Browser QA confirmed both terms, mobile layout without horizontal overflow, class details, filtering, weighted coverage, specific-week views, and CSV/PNG downloads. No browser errors or warnings were observed.
+- Corrected two decorative characters with explicit Unicode escapes and kept timed meetings excluded by a location filter out of the unknown-time count.
+- Added regression checks for portable publication bytes and rejection of a mismatched enrollment export.
+- Configured the exact app-only Gandi destination from FileZilla. Server uploads remain disabled pending connection secrets and trusted host key.
+
 ## Workspace rename
 
 The desktop preview helper retained the old workspace path. A temporary compatibility junction supported visual QA and is removed at teardown. Reopen the renamed project directory in Codex if the app still displays its former path.

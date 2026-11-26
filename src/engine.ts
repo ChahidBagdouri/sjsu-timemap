@@ -89,13 +89,13 @@ export function aggregate(
     unknownTimeSections = 0;
   for (const section of sections) {
     if (section.status !== "active") continue;
-    const scheduled = section.meetings.filter(
-      (m) => m.kind === "scheduled" && matchesPlace(m, view.place),
-    );
-    if (!scheduled.length) {
+    const timed = section.meetings.filter((m) => m.kind === "scheduled");
+    if (!timed.length) {
       unknownTimeSections++;
       continue;
     }
+    const scheduled = timed.filter((m) => matchesPlace(m, view.place));
+    if (!scheduled.length) continue;
     const active = scheduled.some((m) =>
       m.days.some((d) =>
         dates[d].some((date) => date >= m.startDate && date <= m.endDate),

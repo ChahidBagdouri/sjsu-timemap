@@ -3,10 +3,13 @@
 import csv
 import importlib.util
 import io
+import json
+import tempfile
 from pathlib import Path
 import unittest
 from pipeline.schedule import parse_schedule, SourceError
 from pipeline.enrollment import parse_enrollment, join_enrollment
+from pipeline.refresh import atomic_json, build_term
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -104,6 +107,34 @@ class EnrollmentTests(unittest.TestCase):
     def test_wrong_worksheet_is_rejected(self):
         with self.assertRaises(SourceError):
             parse_enrollment(b"Name,Value\nTotal,42\n")
+
+
+class PublicationTests(unittest.TestCase):
+    def test_published_json_bytes_are_portable_utf8_with_lf(self):
+        value = {"title": "San Jos\u00e9", "value": 42}
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "snapshot.json"
+            atomic_json(path, value)
+            raw = path.read_bytes()
+            self.assertEqual(raw, b'{"title":"San Jos\xc3\xa9","value":42}\n')
+            self.assertEqual(json.loads(raw), value)
+            self.assertFalse(path.with_suffix(".json.tmp").exists())
+
+    def test_wrong_term_enrollment_cannot_publish(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            export = Path(temporary) / "enrollment.csv"
+            export.write_text(
+                "Class Nbr,Class Stat,All Stdnts,Max Enr,Cmb Sec,sctn_combined_id,College\n"
+                "99999,A,20,40,,,Science\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(SourceError, "Enrollment matched only"):
+                build_term(
+                    "fall-2026",
+                    FIXTURES / "schedule.html",
+                    export,
+                    "2026-11-26T00:00:00Z",
+                )
 
 
 class DeployTests(unittest.TestCase):

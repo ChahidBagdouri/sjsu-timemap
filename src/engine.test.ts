@@ -141,6 +141,17 @@ describe("exact time concentration", () => {
         .peak,
     ).toBe(0);
   });
+  it("does not label timed meetings excluded by location as unknown", () => {
+    const online = section([[540, 600, term.startDate, term.endDate]]);
+    online.meetings[0].location = "ONLINE";
+    const asynchronous = section([]);
+    const r = aggregate([online, asynchronous], term, {
+      ...view,
+      place: "campus",
+    });
+    expect(r.timedSections).toBe(0);
+    expect(r.unknownTimeSections).toBe(1);
+  });
   it("merges intervals without mutating inputs", () => {
     const a: [number, number][] = [
       [10, 20],

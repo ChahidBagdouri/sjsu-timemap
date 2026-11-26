@@ -420,7 +420,7 @@ export default function App() {
           <nav aria-label="Main">
             <a href="#methodology">How it works</a>
             <a href={REPO} target="_blank" rel="noreferrer">
-              GitHub <span aria-hidden="true">↗</span>
+              GitHub
             </a>
           </nav>
         </div>
@@ -605,7 +605,7 @@ export default function App() {
             </p>
             <div className="sidebar-note">
               <span className="small-map" aria-hidden="true">
-                â–¦
+                {"\u25a6"}
               </span>
               <p>
                 Built for clubs.
@@ -858,7 +858,7 @@ export default function App() {
               <aside className="right-column">
                 <section className="panel event-panel">
                   <div className="event-icon" aria-hidden="true">
-                    â—·
+                    {"\u25f7"}
                   </div>
                   <p className="eyebrow">MAKE TIME TO MEET</p>
                   <h2>Find a quieter window</h2>
