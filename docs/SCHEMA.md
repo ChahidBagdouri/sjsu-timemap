@@ -29,7 +29,7 @@ Enrollment, capacity, and waitlist are nonnegative integers or null. A real zero
 - **Semester average:** arithmetic mean for each weekday across that weekday's dates in the source date envelope. Meeting date ranges determine occurrences. Holidays and exceptions are not yet removed.
 - **Specific week:** published recurring patterns for the selected Monday-through-Sunday date range.
 - **Display cell:** average exact-minute load during its 5/15/30-minute interval. Peak interval load is the maximum displayed cell average.
-- **Event window:** average and peak exact-minute load over the window, optionally extended by 15-minute transition buffers; weekdays 9 AM-8 PM. Suggested windows do not overlap on the same day.
+- **Event opportunity:** eligible enrollment summed once per section/date for any conflict across the full buffered event, balanced against proximity-weighted physical activity before and after it. Relative score `100 * a * (1 - c)` normalizes both signals across weekday candidate slots, with nine assumption settings and explicit coverage. See [Event opportunities](OPPORTUNITIES.md) for date averaging, boundary rules, and limitations. This is separate from the heatmap metric and is not an attendance forecast.
 
 ## Publication gates
 

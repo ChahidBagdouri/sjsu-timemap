@@ -12,3 +12,6 @@ Keep source, tests, workflows, and documentation in this checkout. Preserve the 
 - Keep credentials out of Git and public output.
 - Run parser/aggregation tests and the production build after relevant changes.
 - Report unresolved data issues honestly in docs and UI.
+
+- Production deployment is deferred until the owner explicitly approves v1. Do not enable Gandi uploads or deploy while that approval is pending. GitHub source commits, CI, and data refresh remain authorized.
+- Keep event-opportunity scores distinct from predicted attendance and unique-person counts. Online meetings cause conflicts; only known physical meetings establish nearby activity.

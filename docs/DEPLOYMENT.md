@@ -1,5 +1,9 @@
 # Deployment and operations
 
+## Approval status
+
+The owner has deferred production deployment until explicit approval of v1. Keep `GANDI_DEPLOY_ENABLED=false`; configuring credentials alone is not permission to deploy. Local previews, GitHub source updates, CI, and data collection can continue.
+
 ## Target
 
 The app is a static directory at `https://chahid.bagdouri.com/sjsu-timemap/`, served by the user's existing shared Gandi server. Build assets and data must use the `/sjsu-timemap/` base path.
@@ -50,7 +54,7 @@ After connection setup, verify a scoped upload and the live app before enabling 
 
 The [first hosted refresh](https://github.com/ChahidBagdouri/sjsu-timemap/actions/runs/45763739389) succeeded on 2026-11-26 UTC, including anonymous enrollment exports for both semesters, validation, tests, production build, artifact upload, and a bot commit of the observations. [CI](https://github.com/ChahidBagdouri/sjsu-timemap/actions/runs/45763742207) also passed. The Gandi upload step was skipped because production deployment is disabled.
 
-To finish production setup:
+Only after the owner explicitly approves v1, finish production setup:
 
 1. In the repository's **Settings > Secrets and variables > Actions**, add the connection secrets listed above. Enter credentials there directly.
 2. Confirm the SFTP-visible app destination and a trusted host key. The server must support atomic `posix-rename`.

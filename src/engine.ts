@@ -173,59 +173,6 @@ export function boundaries(rows: Float64Array[], limit = 7) {
     .sort((a, b) => b.value - a.value)
     .slice(0, limit);
 }
-export type WindowScore = {
-  day: number;
-  start: number;
-  end: number;
-  average: number;
-  peak: number;
-};
-export function eventWindows(
-  result: Concentration,
-  duration: number,
-  start = 9 * 60,
-  end = 20 * 60,
-  buffer = 0,
-): WindowScore[] {
-  const candidates: WindowScore[] = [];
-  for (let day = 0; day < 5; day++) {
-    if (!result.denominators[day]) continue;
-    for (let t = start; t + duration <= end; t += 15) {
-      const from = Math.max(0, t - buffer),
-        to = Math.min(MINUTES, t + duration + buffer);
-      let peak = 0;
-      for (let minute = from; minute < to; minute++)
-        peak = Math.max(peak, result.minutes[day][minute]);
-      candidates.push({
-        day,
-        start: t,
-        end: t + duration,
-        average: average(result.minutes[day], from, to),
-        peak,
-      });
-    }
-  }
-  candidates.sort(
-    (a, b) =>
-      a.average - b.average ||
-      a.peak - b.peak ||
-      a.day - b.day ||
-      a.start - b.start,
-  );
-  const chosen: WindowScore[] = [];
-  for (const candidate of candidates) {
-    if (
-      !chosen.some(
-        (x) =>
-          x.day === candidate.day &&
-          Math.min(x.end, candidate.end) > Math.max(x.start, candidate.start),
-      )
-    )
-      chosen.push(candidate);
-    if (chosen.length === 5) break;
-  }
-  return chosen;
-}
 export function contributors(
   sections: Section[],
   day: number,

@@ -3,18 +3,18 @@ import type { Dataset, Manifest, Metric, Place } from "./types";
 import {
   addDays,
   aggregate,
-  average,
   binGrid,
   boundaries,
   clock,
   contributors,
   DAY_SHORT,
   DAYS,
-  eventWindows,
   monday,
   type View,
 } from "./engine";
 import { downloadCsv, downloadPng } from "./export";
+import EventPlanner from "./EventPlanner";
+import type { OpportunityOptions, OpportunityWindow } from "./opportunities";
 
 const BASE = import.meta.env.BASE_URL;
 const REPO = "https://github.com/ChahidBagdouri/sjsu-timemap";
@@ -37,7 +37,7 @@ const COLORS = [
   "#216184",
   "#123e5a",
 ];
-export function heatColor(value: number, max: number) {
+function heatColor(value: number, max: number) {
   if (!value || !max) return COLORS[0];
   return COLORS[Math.max(1, Math.min(6, Math.ceil((value / max) * 6)))];
 }
@@ -144,12 +144,25 @@ export default function App() {
     ),
     [week, setWeek] = useState(initial.get("week") || "");
   const [resolution, setResolution] = useState(
-      [5, 15, 30].includes(Number(initial.get("interval")))
-        ? Number(initial.get("interval"))
-        : 15,
-    ),
-    [duration, setDuration] = useState(60),
-    [buffer, setBuffer] = useState(false);
+    [5, 15, 30].includes(Number(initial.get("interval")))
+      ? Number(initial.get("interval"))
+      : 15,
+  );
+  const [plannerOptions, setPlannerOptions] = useState<OpportunityOptions>(
+    () => ({
+      duration: [30, 60, 90, 120].includes(Number(initial.get("duration")))
+        ? Number(initial.get("duration"))
+        : 60,
+      buffer:
+        [0, 10, 15].includes(Number(initial.get("travel"))) &&
+        initial.has("travel")
+          ? (Number(initial.get("travel")) as OpportunityOptions["buffer"])
+          : 10,
+      proximity: [30, 60, 90].includes(Number(initial.get("nearby")))
+        ? (Number(initial.get("nearby")) as OpportunityOptions["proximity"])
+        : 60,
+    }),
+  );
   const [error, setError] = useState(""),
     [notice, setNotice] = useState(""),
     [loading, setLoading] = useState(true);
@@ -157,6 +170,7 @@ export default function App() {
       day: number;
       start: number;
       end: number;
+      planner?: boolean;
     } | null>(null),
     [detailSearch, setDetailSearch] = useState(""),
     [revision, setRevision] = useState(0);
@@ -221,6 +235,12 @@ export default function App() {
     if (modality !== "all") p.set("modality", modality);
     if (college !== "all") p.set("college", college);
     if (resolution !== 15) p.set("interval", String(resolution));
+    if (plannerOptions.duration !== 60)
+      p.set("duration", String(plannerOptions.duration));
+    if (plannerOptions.buffer !== 10)
+      p.set("travel", String(plannerOptions.buffer));
+    if (plannerOptions.proximity !== 60)
+      p.set("nearby", String(plannerOptions.proximity));
     window.history.replaceState(
       {},
       "",
@@ -236,6 +256,7 @@ export default function App() {
     modality,
     college,
     resolution,
+    plannerOptions,
   ]);
   useEffect(() => {
     const timer = window.setInterval(
@@ -304,13 +325,6 @@ export default function App() {
     [result],
   );
   const ends = useMemo(() => (result ? boundaries(result.ends) : []), [result]);
-  const windows = useMemo(
-    () =>
-      result
-        ? eventWindows(result, duration, 9 * 60, 20 * 60, buffer ? 15 : 0)
-        : [],
-    [result, duration, buffer],
-  );
   const detail = useMemo(
     () =>
       selected && data
@@ -320,7 +334,7 @@ export default function App() {
             selected.start,
             selected.end,
             data.term,
-            view,
+            selected.planner ? { ...view, place: "all" } : view,
           ).filter((s) =>
             `${s.course} ${s.title} ${s.instructor}`
               .toLowerCase()
@@ -368,6 +382,16 @@ export default function App() {
   function selectCell(day: number, start: number, end: number) {
     lastFocus.current = document.activeElement as HTMLElement;
     setSelected({ day, start, end });
+    setDetailSearch("");
+  }
+  function inspectOpportunity(window: OpportunityWindow, buffer: number) {
+    lastFocus.current = document.activeElement as HTMLElement;
+    setSelected({
+      day: window.day,
+      start: window.start - buffer,
+      end: window.end + buffer,
+      planner: true,
+    });
     setDetailSearch("");
   }
   function toggleSubject(value: string) {
@@ -435,9 +459,14 @@ export default function App() {
               with a clearer picture.
             </p>
           </div>
-          <button className="button secondary share" onClick={share}>
-            Copy view link
-          </button>
+          <div className="intro-actions">
+            <a className="button" href="#event-planner">
+              Plan an event
+            </a>
+            <button className="button secondary share" onClick={share}>
+              Copy view link
+            </button>
+          </div>
         </section>
         {notice && (
           <div className="notice" role="status">
@@ -649,7 +678,7 @@ export default function App() {
                 </small>
               </article>
             </div>
-            <div className="main-grid">
+            <div className="main-grid chart-row">
               <section
                 className="panel heatmap-panel"
                 id="heatmap"
@@ -855,89 +884,17 @@ export default function App() {
                   </div>
                 </div>
               </section>
-              <aside className="right-column">
-                <section className="panel event-panel">
-                  <div className="event-icon" aria-hidden="true">
-                    {"\u25f7"}
-                  </div>
-                  <p className="eyebrow">MAKE TIME TO MEET</p>
-                  <h2>Find a quieter window</h2>
-                  <p className="muted">
-                    Compare weekday options between 9 AM and 8 PM using your
-                    current filters.
-                  </p>
-                  <label className="field">
-                    Event length
-                    <select
-                      aria-label="Event length"
-                      value={duration}
-                      onChange={(e) => setDuration(Number(e.target.value))}
-                    >
-                      {[30, 60, 90, 120].map((n) => (
-                        <option key={n} value={n}>
-                          {n} minutes
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="buffer">
-                    <input
-                      type="checkbox"
-                      checked={buffer}
-                      onChange={(e) => setBuffer(e.target.checked)}
-                    />{" "}
-                    Include a 15-minute transition
-                  </label>
-                  {result?.timedSections && !metricUnavailable ? (
-                    <ol className="window-list">
-                      {windows.map((w) => (
-                        <li key={`${w.day}-${w.start}`}>
-                          <button
-                            onClick={() => selectCell(w.day, w.start, w.end)}
-                          >
-                            <span className="window-day">
-                              {DAY_SHORT[w.day]}
-                            </span>
-                            <span>
-                              <strong>
-                                {clock(w.start)}–{clock(w.end)}
-                              </strong>
-                              <small>
-                                {format(w.average)} {unit(metric)} avg ·{" "}
-                                {format(w.peak)} peak
-                              </small>
-                            </span>
-                          </button>
-                        </li>
-                      ))}
-                    </ol>
-                  ) : (
-                    <p className="empty-copy">
-                      Choose a view with scheduled classes to compare event
-                      windows.
-                    </p>
-                  )}
-                  <p className="helper">
-                    Lower scheduled load can mean fewer class conflicts. It
-                    doesn’t measure club members’ availability or campus
-                    attendance.
-                  </p>
-                </section>
-                <section className="data-note">
-                  <div>
-                    <span className="data-badge">OFFICIAL SOURCE DATA</span>
-                    <h3>A snapshot, clearly labeled.</h3>
-                  </div>
-                  <p>
-                    {data
-                      ? `Schedule downloaded ${new Date(data.sources[0].observedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/Los_Angeles" })}.`
-                      : "Loading source information."}{" "}
-                    SJSU refreshes its public data nightly.
-                  </p>
-                  <a href="#methodology">View coverage & methodology</a>
-                </section>
-              </aside>
             </div>
+            <EventPlanner
+              data={data}
+              sections={filtered}
+              loading={loading}
+              period={{ mode, week: view.week }}
+              periodLabel={timeLabel}
+              options={plannerOptions}
+              onOptions={setPlannerOptions}
+              onInspect={inspectOpportunity}
+            />
             <div className="patterns-grid">
               {[
                 [
@@ -1076,7 +1033,9 @@ export default function App() {
           >
             <div className="drawer-heading">
               <div>
-                <p className="eyebrow">BEHIND THE HEATMAP</p>
+                <p className="eyebrow">
+                  {selected.planner ? "EVENT CONFLICTS" : "BEHIND THE HEATMAP"}
+                </p>
                 <h2 id="detail-title">{DAYS[selected.day]}</h2>
                 <p>
                   {clock(selected.start)}–{clock(selected.end)} · {timeLabel}
@@ -1094,7 +1053,9 @@ export default function App() {
             <p className="helper">
               Sections with a meeting overlapping this window during the
               selected period. Their students may overlap across different
-              classes.
+              classes.{" "}
+              {selected.planner &&
+                "Both travel buffers and all meeting locations are included. Unknown and combined sections are shown here, but omitted from weighted scores."}
             </p>
             <input
               type="search"

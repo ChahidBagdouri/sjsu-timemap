@@ -39,3 +39,7 @@ Python fixtures cover real multiple-meeting markup, blank location placeholders,
 The build produces static `dist/` output for `/sjsu-timemap/`. It needs HTTP hosting for dataset fetches; opening `index.html` using `file://` is not supported. Prettier formats browser code/docs/workflows; Black formats Python. On Windows, use explicit UTF-8 when reading and writing source files.
 
 Source-code licensing remains an owner decision. No license has been silently selected.
+
+## Event opportunity calculations
+
+`src/opportunities.ts` evaluates the nine schedule-derived assumption settings; `src/EventPlanner.tsx` presents them. Regression tests cover full-event feasibility and date-specific activity, and integration tests read each current manifest snapshot. See [Event opportunities](OPPORTUNITIES.md) before changing scoring, normalization, candidate scope, or the meaning of coverage. The planner uses reported enrollment independently of the heatmap metric or location.

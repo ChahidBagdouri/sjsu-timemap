@@ -32,6 +32,6 @@ Verify full-semester source coverage, duplicate identifiers, time/day parsing, e
 
 The adapter uses anonymous startSession and the same public crosstab offered by the dashboard. Session field IDs are discovered rather than hardcoded. Select-all uses `filter-all`; an empty replacement selects nothing. Semester changes must include ESSD storyboard/story-point context. Unchanged filter responses retain the initial confirmed state.
 
-Fall joins 6,978/6,979 schedule sections (99.99%); Spring joins 6,672/6,687 (99.78%). These are matching percentages, not weighting coverage. See [Schema](SCHEMA.md) and [Known limitations](KNOWN_LIMITATIONS.md).
+Initial checks on 2026-11-25 matched Fall 6,978/6,979 schedule sections (99.99%) and Spring 6,672/6,687 (99.78%). These are historical baseline matching percentages, not weighting coverage; current counts are in the published manifest and dataset quality report. See [Schema](SCHEMA.md) and [Known limitations](KNOWN_LIMITATIONS.md).
 
 SJSU documents tentative sections and distinguishes enrollment closure from cancellation: https://blogs.sjsu.edu/makeithappen/2025/11/13/university-meeting-communication-takeaways/

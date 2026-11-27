@@ -1,5 +1,7 @@
 import type { Metric } from "./types";
 import { clock, DAYS } from "./engine";
+import type { Dataset } from "./types";
+import type { OpportunityOptions, OpportunityRanking } from "./opportunities";
 const COLORS = [
   "#f0f4f8",
   "#d9e8f2",
@@ -16,6 +18,80 @@ function save(blob: Blob, name: string) {
   a.download = name;
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+export function downloadOpportunitiesCsv(
+  ranking: OpportunityRanking,
+  data: Dataset,
+  period: string,
+  options: OpportunityOptions,
+) {
+  const rows: (string | number)[][] = [
+    [
+      "term",
+      "period",
+      "weekday",
+      "start_pacific",
+      "end_pacific",
+      "duration_minutes",
+      "travel_buffer_each_side",
+      "nearby_window_minutes",
+      "relative_opportunity_score_not_attendance",
+      "rank",
+      "candidate_slots",
+      "nearby_activity_units",
+      "ending_activity_units",
+      "starting_activity_units",
+      "conflicting_enrollments",
+      "relative_activity",
+      "relative_conflicts",
+      "top_decile_settings",
+      "settings_tested",
+      "best_rank",
+      "worst_rank",
+      "eligible_weekday_sections",
+      "total_weekday_sections",
+      "view_url",
+      "snapshot_generated_at",
+      "source_download_times",
+    ],
+  ];
+  for (const w of ranking.candidates)
+    rows.push([
+      data.term.label,
+      period,
+      DAYS[w.day],
+      clock(w.start),
+      clock(w.end),
+      options.duration,
+      options.buffer,
+      options.proximity,
+      w.score,
+      w.rank,
+      ranking.candidateCount,
+      w.nearby,
+      w.ending,
+      w.starting,
+      w.conflicts,
+      w.normalizedActivity,
+      w.normalizedConflicts,
+      w.topSettings,
+      w.settings.length,
+      w.minRank,
+      w.maxRank,
+      ranking.coverage.eligibleSections,
+      ranking.coverage.timedSections,
+      window.location.href,
+      data.generatedAt,
+      data.sources.map((s) => s.name + ": " + s.observedAt).join("; "),
+    ]);
+  const quote = (s: string | number) =>
+    '"' + String(s).replaceAll('"', '""') + '"';
+  save(
+    new Blob([rows.map((row) => row.map(quote).join(",")).join("\r\n")], {
+      type: "text/csv;charset=utf-8",
+    }),
+    "sjsu-timemap-" + data.term.id + "-opportunities.csv",
+  );
 }
 export function downloadCsv(
   grid: number[][],

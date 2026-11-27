@@ -8,9 +8,11 @@
 - [x] Build responsive heatmap, filters, class details, and start/end distributions.
 - [x] Add enrollment-weighted mode with explicit coverage.
 - [x] Add date-aware event-window comparisons and exports.
+- [x] Rank event opportunities using conflicts, nearby physical activity, and nine assumption settings.
 - [x] Verify browser behavior and production build.
 - [x] Run GitHub CI and hosted source import.
-- [ ] Configure narrowly scoped Gandi deployment when connection details are available.
+- [ ] Obtain explicit owner approval of v1 before production deployment.
+- [ ] Configure narrowly scoped Gandi deployment after approval and connection setup.
 
 ## Following the first release
 

@@ -6,7 +6,7 @@ TimeMap combines public meeting schedules with section enrollment counts to help
 
 ## Project status
 
-A working first version includes real Fall 2026 and Spring 2027 schedules, enrollment weighting with visible coverage, filters, event-window comparisons, and exports. See [Roadmap](docs/ROADMAP.md) and [Build log](docs/BUILD_LOG.md) for verified progress and limitations.
+A working first version includes real Fall 2026 and Spring 2027 schedules, enrollment weighting with visible coverage, filters, event-opportunity rankings with explicit assumptions, and exports. Production deployment is deferred until the owner approves v1. See [Roadmap](docs/ROADMAP.md) and [Build log](docs/BUILD_LOG.md) for verified progress and limitations.
 
 ## Run locally
 
@@ -39,6 +39,7 @@ The local Git checkout lives in `sjsu-timemap/dev`. The original De Anza referen
 
 - [Development guide](docs/DEVELOPMENT.md)
 - [Dataset contract](docs/SCHEMA.md)
+- [Event-opportunity methodology](docs/OPPORTUNITIES.md)
 - [Known limitations](docs/KNOWN_LIMITATIONS.md)
 - [Architecture and decisions](docs/DECISIONS.md)
 - [Sources and data semantics](docs/DATA.md)

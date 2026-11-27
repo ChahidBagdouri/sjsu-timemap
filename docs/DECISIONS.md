@@ -20,5 +20,9 @@ Browser computations use versioned semester JSON. Historical enrollment means ob
 ## Open decisions
 
 - Source code license has not been selected.
-- Production SFTP endpoint, host key, application directory, and deployment credential remain to be configured.
-- Full public Tableau export completeness and combined-section count semantics require empirical validation.
+- Production SFTP endpoint, trusted host key, and deployment credential remain to be configured. The application directory is confirmed in [Deployment](DEPLOYMENT.md). Deployment is deferred until explicit owner approval of v1.
+- Full-term public Tableau export and enrollment joins have been verified. Combined-section shared-count semantics still require verification.
+
+## 2026-11-26: event opportunities without attendance history
+
+Replace minimum-load event suggestions with a relative opportunity index balancing full-event conflicting enrollments against proximity-weighted physical activity. Use actual date patterns, eligible enrollment, a stronger-boundary-per-section rule, and nine explicit buffer/proximity assumptions. Report raw signals and coverage; never label the result as attendance, campus occupancy, or unique available people. See [Event opportunities](OPPORTUNITIES.md) for the full contract.
